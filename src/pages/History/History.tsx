@@ -6,7 +6,6 @@ import { ptBR } from 'date-fns/locale'
 export function History() {
     const { cycles } = useContext(cyclesContext)
 
-
     return (
         <HistoryContainer>
 
@@ -56,7 +55,7 @@ export function History() {
                             }
                             )
                         }
-                        <button>Apagar</button>
+                     
                     </tbody>
                 </table>
 

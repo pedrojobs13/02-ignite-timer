@@ -33,11 +33,16 @@ export function CyclesContextProvider({ children }:
         cycles: [],
         activeCycleId: null
     },
-        () => {
-            const storedStateASJSON = localStorage.getItem('@ignite-timer: cycles-state-1.0.0')
-            if (storedStateASJSON) {
-                return JSON.parse(storedStateASJSON)
+        (initialState) => {
+            const storedStateAsJSON = sessionStorage.getItem(
+                '@ignite-timer:cycles-state-1.0.0',
+            )
+
+            if (storedStateAsJSON) {
+                return JSON.parse(storedStateAsJSON)
             }
+
+            return initialState
         },
     )
     const { cycles, activeCycleId } = cyclesState
@@ -45,18 +50,16 @@ export function CyclesContextProvider({ children }:
 
     const [amountSecondsPassed, setAmountSecondsPassed] = useState(() => {
         if (activeCycle) {
-            return differenceInSeconds(
-                new Date(),
-                new Date(activeCycle.startDate)
-            )
+            return differenceInSeconds(new Date(), new Date(activeCycle.startDate))
         }
+
         return 0
     })
 
 
     useEffect(() => {
-        const CycleJson = JSON.stringify(cyclesState)
-        localStorage.setItem('@ignite-timer: cycles-state-1.0.0', CycleJson)
+        const stateJSON = JSON.stringify(cyclesState)
+        sessionStorage.setItem('@ignite-timer: cycles-state-1.0.0', stateJSON)
     }, [cyclesState]);
 
 
@@ -89,7 +92,7 @@ export function CyclesContextProvider({ children }:
             interruptCycleAction()
         )
     }
-    
+
     return (
 
         < cyclesContext.Provider value={{
