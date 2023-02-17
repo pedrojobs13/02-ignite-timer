@@ -1,55 +1,68 @@
-import { Play } from "phosphor-react";
-import { HomeContainer, FormContainer, CountdownContainer, Separator, StartCountdownButton, TaskInput, MinutesAmountInput } from "./styles";
+import { Hand, Play } from "phosphor-react";
+import {
+    HomeContainer, StartCountDownButton, StopCountDownButton
+} from "./styles";
+import { Countdown } from "./components/Countdown";
+import * as zod from 'zod'
 import { useForm } from 'react-hook-form'
+import { zodResolver } from "@hookform/resolvers/zod";
+import { NewCycleFormEnter } from "./components/NewCycleFormEnter";
+import { useContext } from "react";
+import { cyclesContext } from "../../context/CyclesContext";
+
+interface NewCycleFormData {
+    task: string
+    minutesAmount: number
+}
+
+const newCycleFormValidationSchema = zod.object({
+    task: zod.string().min(1, 'Informe a tarefa'),
+    minutesAmount: zod
+        .number()
+        .min(1, 'O ciclo precisa ser de 5 minutos')
+        .max(60, 'O cliclo precisa ser no máximo de 60 minutos'),
+})
+
 export function Home() {
-    const { register, handleSubmit, watch } = useForm();
+    const { activeCycle, createNewCycle, interruptCycle } = useContext(cyclesContext)
+
+
+    const NewCycleForm = useForm<NewCycleFormData>({
+        resolver: zodResolver(newCycleFormValidationSchema),
+        defaultValues: {
+            task: '',
+            minutesAmount: 0,
+        },
+    });
+
+    const { handleSubmit, watch, reset, register } = NewCycleForm
+    function handleCreateNewCycle(data: NewCycleFormData) {
+        createNewCycle(data)
+        reset();
+    }
+
 
     const task = watch('task')
-    const isChangeInput = !task
-    function handleCreateNewCycle(data: any) {
-        console.log(data)
-    }
+    const isChangeInput = !task;
     return (
         <HomeContainer>
             <form action="" onSubmit={handleSubmit(handleCreateNewCycle)}>
-                <FormContainer>
-                    <label htmlFor="task">Vou trabalhar em</label>
-                    <TaskInput
-                        id="task"
-                        placeholder="Dê um nome para o seu projeto"
-                        list='task-suggestions'
-                        {...register('task')}
-                    />
-                    <datalist
-                        id='task-suggestions'
-                    >
-                        <option value='projeto 1' />
-                        <option value='projeto 2' />
-                        <option value='projeto 3' />
-                        <option value='projeto 4' />
-                    </datalist>
-
-                    <label htmlFor="minutesAmount">durante</label>
-                    <MinutesAmountInput
-                        type='number'
-                        placeholder="00"
-                        step={5}
-                        max={60} />
-                    <span>minutos.</span>
-                </FormContainer>
-
-                <CountdownContainer>
-                    <span>0</span>
-                    <span>0</span>
-                    <Separator>:</Separator>
-                    <span>0</span>
-                    <span>0</span>
-                </CountdownContainer>
-                <StartCountdownButton type="submit" disabled={isChangeInput}>
-                    <Play size={26} />
-                    Começar
-                </StartCountdownButton>
+                <NewCycleFormEnter register={register} />
+                <Countdown />
+                {
+                    (activeCycle ?
+                        <StopCountDownButton onClick={interruptCycle} >
+                            <Hand size={26} />
+                            Interroper
+                        </StopCountDownButton> :
+                        <StartCountDownButton type="submit" disabled={isChangeInput}>
+                            <Play size={26} />
+                            Começar
+                        </StartCountDownButton>
+                    )
+                }
             </form>
         </HomeContainer>
     )
 }
+
